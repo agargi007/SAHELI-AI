@@ -1,0 +1,42 @@
+{
+  "name": "Conversation",
+  "type": "object",
+  "properties": {
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "hi",
+        "mr"
+      ],
+      "default": "hi"
+    },
+    "topic": {
+      "type": "string",
+      "enum": [
+        "domestic_violence",
+        "property_rights",
+        "divorce_maintenance",
+        "general"
+      ]
+    },
+    "user_query": {
+      "type": "string"
+    },
+    "ai_response": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "answered"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "language",
+    "user_query"
+  ]
+}

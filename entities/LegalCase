@@ -1,0 +1,67 @@
+{
+    "name": "LegalCase",
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string"
+        },
+        "client_name": {
+            "type": "string"
+        },
+        "topic": {
+            "type": "string",
+            "enum": [
+                "domestic_violence",
+                "property_rights",
+                "divorce_maintenance",
+                "general"
+            ]
+        },
+        "description": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "open",
+                "in_progress",
+                "hearing_scheduled",
+                "closed"
+            ],
+            "default": "open"
+        },
+        "deadlines": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "date": {
+                        "type": "string"
+                    },
+                    "done": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+        "notes": {
+            "type": "string"
+        },
+        "ai_summary": {
+            "type": "string"
+        },
+        "ai_precedents": {
+            "type": "string"
+        },
+        "ai_document": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "title",
+        "topic"
+    ]
+}
