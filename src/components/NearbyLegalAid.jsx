@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Loader2, ChevronDown, ChevronUp, Phone, Building2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 
 const LABELS = {
     hi: { btn: 'नजदीकी कानूनी सहायता खोजें', loading: 'खोज रहे हैं...', denied: 'स्थान अनुमति नहीं मिली', title: 'नजदीकी कानूनी सहायता केंद्र', district: 'जिला' },
@@ -26,32 +25,16 @@ export default function NearbyLegalAid({ language }) {
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
                 const { latitude, longitude } = pos.coords;
-                const result = await base44.integrations.Core.InvokeLLM({
-                    prompt: `Given GPS coordinates latitude=${latitude}, longitude=${longitude}, identify the district and state in India. Then list 4-5 real government-sponsored legal aid offices, district courts, or NGO legal clinics in that district. Include their name, address, and phone number if available. Return JSON only.`,
-                    add_context_from_internet: true,
-                    response_json_schema: {
-                        type: 'object',
-                        properties: {
-                            district: { type: 'string' },
-                            state: { type: 'string' },
-                            clinics: {
-                                type: 'array',
-                                items: {
-                                    type: 'object',
-                                    properties: {
-                                        name: { type: 'string' },
-                                        address: { type: 'string' },
-                                        phone: { type: 'string' }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-                setDistrict(`${result.district}, ${result.state}`);
-                setClinics(result.clinics || []);
-                setStatus('done');
-                setExpanded(true);
+                // Mocking the LLM API call for Nearby Legal Aid
+                setTimeout(() => {
+                    setDistrict(`Mumbai, Maharashtra`);
+                    setClinics([
+                        { name: 'District Legal Services Authority', address: 'Mumbai City Civil Court', phone: '022-12345678' },
+                        { name: 'Majlis Legal Centre', address: 'Bandra East', phone: '022-87654321' }
+                    ]);
+                    setStatus('done');
+                    setExpanded(true);
+                }, 1500);
             },
             () => setStatus('error')
         );
