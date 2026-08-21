@@ -4,13 +4,13 @@ import { Mic, MicOff, Send } from 'lucide-react';
 
 const LANG_CODES = { hi: 'hi-IN', mr: 'mr-IN', en: 'en-IN', ta: 'ta-IN', te: 'te-IN', bn: 'bn-IN', gu: 'gu-IN' };
 const PROMPTS = {
-    hi: { idle: 'बोलने के लिए दबाएं', listening: 'सुन रहे हैं...', placeholder: 'या यहाँ टाइप करें...', send: 'भेजें', topic: 'अपनी समस्या बताएं' },
-    mr: { idle: 'बोलण्यासाठी दाबा', listening: 'ऐकत आहे...', placeholder: 'किंवा येथे टाइप करा...', send: 'पाठवा', topic: 'आपली समस्या सांगा' },
-    ta: { idle: 'பேச அழுத்தவும்', listening: 'கேட்கிறோம்...', placeholder: 'அல்லது இங்கே தட்டச்சு செய்யவும்...', send: 'அனுப்பு', topic: 'உங்கள் பிரச்சினை சொல்லுங்கள்' },
-    te: { idle: 'మాట్లాడటానికి నొక్కండి', listening: 'వినడం...', placeholder: 'లేదా ఇక్కడ టైప్ చేయండి...', send: 'పంపు', topic: 'మీ సమస్యను చెప్పండి' },
-    bn: { idle: 'বলতে চাপ দিন', listening: 'শুনছি...', placeholder: 'বা এখানে টাইপ করুন...', send: 'পাঠান', topic: 'আপনার সমস্যা বলুন' },
-    gu: { idle: 'બોલવા દબાવો', listening: 'સાંભળી રહ્યા છીએ...', placeholder: 'અથવા અહીં ટાઇપ કરો...', send: 'મોકલો', topic: 'તમારી સમસ્યા કહો' },
-    en: { idle: 'Tap to speak', listening: 'Listening...', placeholder: 'Or type here...', send: 'Send', topic: 'Tell us your problem' },
+    hi: { idle: 'बोलने के लिए दबाएं', listening: 'सुन रहे हैं... रुकने के लिए फिर से दबाएं', placeholder: 'या यहाँ टाइप करें...', send: 'भेजें', topic: 'अपनी समस्या बताएं' },
+    mr: { idle: 'बोलण्यासाठी दाबा', listening: 'ऐकत आहे... थांबण्यासाठी पुन्हा दाबा', placeholder: 'किंवा येथे टाइप करा...', send: 'पाठवा', topic: 'आपली समस्या सांगा' },
+    ta: { idle: 'பேச அழுத்தவும்', listening: 'கேட்கிறோம்... நிறுத்த மீண்டும் அழுத்தவும்', placeholder: 'அல்லது இங்கே தட்டச்சு செய்யவும்...', send: 'அனுப்பு', topic: 'உங்கள் பிரச்சினை சொல்லுங்கள்' },
+    te: { idle: 'మాట్లాడటానికి నొక్కండి', listening: 'వినడం... ఆపడానికి మళ్ళీ నొక్కండి', placeholder: 'లేదా ఇక్కడ టైప్ చేయండి...', send: 'పంపు', topic: 'మీ సమస్యను చెప్పండి' },
+    bn: { idle: 'বলতে চাপ দিন', listening: 'শুনছি... থামাতে আবার চাপ দিন', placeholder: 'বা এখানে টাইপ করুন...', send: 'পাঠান', topic: 'আপনার সমস্যা বলুন' },
+    gu: { idle: 'બોલવા દબાવો', listening: 'સાંભળી રહ્યા છીએ... રોકવા માટે ફરીથી દબાવો', placeholder: 'અથવા અહીં ટાઇપ કરો...', send: 'મોકલો', topic: 'તમારી સમસ્યા કહો' },
+    en: { idle: 'Click to speak', listening: 'Listening... Click again after speaking', placeholder: 'Or type here...', send: 'Send', topic: 'Tell us your problem' },
 };
 
 const TOPICS = {

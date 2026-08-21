@@ -15,77 +15,49 @@ const LABELS = {
     en: { you: 'Your query', advice: 'Legal Advice', loading: 'Preparing your advice...', again: 'Ask again', speak: 'Listen', stop: 'Stop' },
 };
 
-export default function LegalResponse({ transcript, response, loading, language, onAskAgain, autoSpeak = false }) {
-    const [speaking, setSpeaking] = useState(false);
-    const utteranceRef = useRef(null);
+export default function LegalResponse({ transcript, response, loading, language, onAskAgain }) {
     const labels = LABELS[language] || LABELS.en;
 
-    useEffect(() => {
-        return () => window.speechSynthesis?.cancel();
-    }, []);
-
-    const cleanForSpeech = (text) => {
-        return text
-            .replace(/```[\s\S]*?```/g, '')                        // code blocks
-            .replace(/`[^`]*`/g, '')                               // inline code
-            .replace(/\*\*([^*]+)\*\*/g, '$1')                    // bold
-            .replace(/\*([^*]+)\*/g, '$1')                         // italic
-            .replace(/#{1,6}\s*/g, '')                             // headings
-            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')              // links
-            .replace(/^[-*\u2022>#+]\s*/gm, '')                   // bullets & symbols
-            .replace(/[_~|\\^<>{}\[\]]/g, '')                     // misc symbols
-            .replace(/\u2014|\u2013|--|---/g, ', ')                // dashes to pause
-            .replace(/\u2019|\u2018/g, "'")                       // smart quotes
-            .replace(/\u201c|\u201d/g, '')                         // curly double quotes
-            // Remove all emojis and unicode pictographs
-            .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
-            .replace(/[\u{2600}-\u{27BF}]/gu, '')
-            .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
-            .replace(/[\u2702-\u27B0]/g, '')
-            .replace(/[\uE000-\uF8FF]/g, '')
-            .replace(/\n{2,}/g, '. ')                              // double newlines
-            .replace(/\n/g, ' ')                                   // single newlines
-            .replace(/\.{2,}/g, '.')                               // multiple dots
-            .replace(/\s{2,}/g, ' ')                               // extra spaces
-            .trim();
-    };
-
-    const speakText = (text) => {
-        window.speechSynthesis?.cancel();
-        const clean = cleanForSpeech(text);
-        const u = new SpeechSynthesisUtterance(clean);
-        u.lang = LANG_CODES[language] || 'hi-IN';
-        u.rate = 0.88;
-        u.pitch = 1.1;
-        // Pick a female voice if available
-        const voices = window.speechSynthesis.getVoices();
-        const femaleVoice = voices.find(v =>
-            v.lang.startsWith(LANG_CODES[language]?.split('-')[0] || 'hi') &&
-            /female|woman|zira|heera|veena|lekha|priya|aditi/i.test(v.name)
-        ) || voices.find(v => v.lang.startsWith(LANG_CODES[language]?.split('-')[0] || 'hi'));
-        if (femaleVoice) u.voice = femaleVoice;
-        u.onend = () => setSpeaking(false);
-        utteranceRef.current = u;
-        window.speechSynthesis.speak(u);
-        setSpeaking(true);
-    };
-
-    // Auto-speak when response arrives
-    useEffect(() => {
-        if (autoSpeak && response && !loading) {
-            // Voices may not be loaded yet — wait for them
-            const trySpeak = () => speakText(response);
-            if (window.speechSynthesis.getVoices().length > 0) {
-                trySpeak();
-            } else {
-                window.speechSynthesis.onvoiceschanged = () => { trySpeak(); window.speechSynthesis.onvoiceschanged = null; };
-            }
+    const renderResponseContent = () => {
+        if (typeof response === 'string') {
+            return <p className="text-sm text-foreground">{response}</p>;
         }
-    }, [response, loading]);
-
-    const handleSpeak = () => {
-        if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-        speakText(response);
+        return (
+            <div className="space-y-4">
+                <h2 className="text-sm font-bold text-foreground border-b border-border pb-1">
+                    {response.summary}
+                </h2>
+                {response.steps && (
+                    <div className="space-y-2 mt-2">
+                        {response.steps.map((s, idx) => (
+                            <div key={idx} className="flex items-start gap-2 text-sm">
+                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+                                <span className="flex-1 leading-relaxed text-foreground">{s.instruction}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {response.documents && (
+                    <div className="mt-3 p-3 bg-primary/5 border border-primary/10 rounded-xl">
+                        <p className="text-xs font-semibold text-primary mb-1">
+                           {language === 'hi' ? 'दस्तावेज' : language === 'mr' ? 'कागदपत्रे' : language === 'ta' ? 'ஆவணங்கள்' : 'Documents'}
+                        </p>
+                        <p className="text-sm text-foreground">{response.documents}</p>
+                    </div>
+                )}
+                {response.videoId && (
+                    <div className="mt-4 rounded-xl overflow-hidden border border-border shadow-sm">
+                        <div className="aspect-video w-full bg-muted relative">
+                            <iframe 
+                                className="absolute inset-0 w-full h-full"
+                                src={`https://www.youtube.com/embed/${response.videoId}`}
+                                allowFullScreen
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
     };
 
     return (
@@ -105,18 +77,6 @@ export default function LegalResponse({ transcript, response, loading, language,
                         </div>
                         <p className="text-xs font-semibold text-foreground">{labels.advice}</p>
                     </div>
-                    {!loading && response && (
-                        <button
-                            onClick={handleSpeak}
-                            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all ${speaking
-                                    ? 'border-destructive/30 text-destructive bg-destructive/5'
-                                    : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'
-                                }`}
-                        >
-                            {speaking ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-                            {speaking ? labels.stop : labels.speak}
-                        </button>
-                    )}
                 </div>
 
                 {loading ? (
@@ -135,41 +95,7 @@ export default function LegalResponse({ transcript, response, loading, language,
                     </div>
                 ) : (
                     <div className="text-sm text-foreground leading-relaxed space-y-2">
-                        <ReactMarkdown
-                            components={{
-                                p: ({ children }) => <p className="text-sm leading-relaxed text-foreground mb-2">{children}</p>,
-                                strong: ({ children }) => <span className="font-semibold text-foreground">{children}</span>,
-                                em: ({ children }) => <span className="italic">{children}</span>,
-                                h1: ({ children }) => <h2 className="text-base font-bold text-foreground mt-3 mb-1.5 border-b border-border pb-1">{children}</h2>,
-                                h2: ({ children }) => <h3 className="text-sm font-bold text-foreground mt-3 mb-1.5 border-b border-border pb-1">{children}</h3>,
-                                h3: ({ children }) => <p className="text-sm font-semibold text-foreground mt-2 mb-1">{children}</p>,
-                                ul: ({ children }) => <ul className="space-y-1.5 my-2">{children}</ul>,
-                                ol: ({ children }) => <ol className="space-y-1.5 my-2 list-none counter-reset-item">{children}</ol>,
-                                li: ({ children, ordered, index }) => (
-                                    <li className="flex items-start gap-2 text-sm">
-                                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
-                                        <span className="flex-1 leading-relaxed">{children}</span>
-                                    </li>
-                                ),
-                                table: ({ children }) => (
-                                    <div className="my-2 rounded-xl overflow-hidden border border-border">
-                                        <table className="w-full text-xs">{children}</table>
-                                    </div>
-                                ),
-                                thead: ({ children }) => <thead className="bg-primary/10">{children}</thead>,
-                                tbody: ({ children }) => <tbody className="divide-y divide-border">{children}</tbody>,
-                                tr: ({ children }) => <tr>{children}</tr>,
-                                th: ({ children }) => <th className="px-3 py-2 text-left font-semibold text-foreground">{children}</th>,
-                                td: ({ children }) => <td className="px-3 py-2 text-muted-foreground">{children}</td>,
-                                blockquote: ({ children }) => (
-                                    <div className="border-l-4 border-primary/40 pl-3 py-1 bg-primary/5 rounded-r-lg my-2 text-sm text-muted-foreground">{children}</div>
-                                ),
-                                hr: () => <hr className="border-border my-3" />,
-                                code: ({ children }) => <code className="bg-muted px-1 py-0.5 rounded text-xs">{children}</code>,
-                            }}
-                        >
-                            {response}
-                        </ReactMarkdown>
+                        {renderResponseContent()}
                     </div>
                 )}
             </div>

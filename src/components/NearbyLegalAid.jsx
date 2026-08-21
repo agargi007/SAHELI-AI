@@ -25,16 +25,28 @@ export default function NearbyLegalAid({ language }) {
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
                 const { latitude, longitude } = pos.coords;
-                // Mocking the LLM API call for Nearby Legal Aid
-                setTimeout(() => {
-                    setDistrict(`Mumbai, Maharashtra`);
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                    const data = await res.json();
+                    
+                    const cityOrDistrict = data.address?.city || data.address?.state_district || data.address?.county || data.address?.state || 'Your Area';
+                    
+                    setDistrict(cityOrDistrict);
+                    // Mocking clinics based on location
                     setClinics([
-                        { name: 'District Legal Services Authority', address: 'Mumbai City Civil Court', phone: '022-12345678' },
-                        { name: 'Majlis Legal Centre', address: 'Bandra East', phone: '022-87654321' }
+                        { name: 'District Legal Services Authority', address: `Civil Court, ${cityOrDistrict}`, phone: '15100' },
+                        { name: 'Women\'s Rights Clinic', address: `${cityOrDistrict} Center`, phone: '181' }
                     ]);
                     setStatus('done');
                     setExpanded(true);
-                }, 1500);
+                } catch (e) {
+                    setDistrict('Local Area');
+                    setClinics([
+                        { name: 'District Legal Services Authority', address: 'Local Civil Court', phone: '15100' }
+                    ]);
+                    setStatus('done');
+                    setExpanded(true);
+                }
             },
             () => setStatus('error')
         );

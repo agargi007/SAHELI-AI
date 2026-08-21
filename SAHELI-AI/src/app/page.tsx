@@ -7,6 +7,7 @@ import LegalResponse from "@/components/LegalResponse";
 import SOSButton from "@/components/SOSButton";
 import { DisclaimerDialog } from "@/components/DisclaimerDialog";
 import { PinLockDialog } from "@/components/PinLockDialog";
+import LegalEducation from "@/components/LegalEducation";
 import { useAppStore } from "@/store";
 import { XOctagon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,9 +40,7 @@ export default function Home() {
       const data = await res.json();
       
       // Format mock response to markdown to look good in LegalResponse
-      const mdResponse = `## ${data.summary}\n\n**Action Steps:**\n${data.steps.map((s:any) => `- ${s.instruction}`).join('\n')}\n\n**Helplines:**\n${data.helplineNumbers.map((h:any) => `- ${h}`).join('\n')}`;
-      
-      setResponse(mdResponse);
+      setResponse(data);
     } catch (e) {
       setResponse("An error occurred. Please try again.");
     } finally {
@@ -66,7 +65,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <DisclaimerDialog />
-      <PinLockDialog open={showPinDialog} onOpenChange={setShowPinDialog} onSuccess={() => alert("Navigating to Cases...")} />
+      <PinLockDialog open={showPinDialog} onOpenChange={setShowPinDialog} onSuccess={() => setStep("cases")} />
 
       {/* Header */}
       <header className="px-6 py-5 border-b border-border flex items-center justify-between">
@@ -80,6 +79,14 @@ export default function Home() {
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
+          {step !== "language" && (
+            <button onClick={handleNewQuery} className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border hover:border-foreground/20 transition-colors">
+              🌐 Language
+            </button>
+          )}
+          <button onClick={() => setStep("education")} className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border hover:border-foreground/20 transition-colors">
+            📺 Education
+          </button>
           <button onClick={() => setShowPinDialog(true)} className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border hover:border-foreground/20 transition-colors">
             📁 Cases
           </button>
@@ -100,12 +107,23 @@ export default function Home() {
             loading={loading}
             language={language}
             onAskAgain={handleReset}
-            autoSpeak={true}
           />
+        )}
+        {step === "education" && (
+          <LegalEducation />
+        )}
+        {step === "cases" && (
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-sm">
+             <h2 className="text-lg font-bold text-foreground mb-4">Your Cases</h2>
+             <p className="text-sm text-muted-foreground mb-6">This section is securely unlocked. Your case records will appear here.</p>
+             <Button onClick={() => setStep("language")} variant="outline" className="w-full">
+               Back to Home
+             </Button>
+          </div>
         )}
       </main>
 
-      <SOSButton />
+      {step !== "cases" && step !== "education" && <SOSButton />}
     </div>
   );
 }
