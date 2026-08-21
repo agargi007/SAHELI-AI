@@ -45,7 +45,7 @@ export function Topbar() {
       </Button>
 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger>
           <Button variant="outline" className="gap-2 bg-white font-medium">
             <Globe className="h-4 w-4" />
             {getLanguageLabel()}

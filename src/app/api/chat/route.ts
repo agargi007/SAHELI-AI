@@ -38,17 +38,29 @@ export async function POST(req: Request) {
     };
     console.log(`[API] TTS Dialect config ready for ${language}:`, dialectConfig[language as keyof typeof dialectConfig] || 'default');
 
-    // Mock response for development
+    // Placeholder translation helper (replace with real translation/LLM calls)
+    const translatePlaceholder = (text: string, lang?: string) => {
+      if (!lang || lang === 'en') return text;
+      // In dev we simply prefix with language code to indicate localization.
+      return `[${lang}] ${text}`;
+    };
+
+    // Mock response for development — localized using the placeholder translator
+    const rawSteps = [
+      { stepNumber: 1, instruction: "Find a safe space immediately.", icon: "shield" },
+      { stepNumber: 2, instruction: "Call women's helpline 181.", icon: "phone" },
+      { stepNumber: 3, instruction: "Gather important documents.", icon: "file" }
+    ];
+
+    const localizedSteps = rawSteps.map(s => ({ ...s, instruction: translatePlaceholder(s.instruction, language) }));
+
     return NextResponse.json({
       category: "domestic_violence",
-      summary: "I understand. Here are steps to stay safe.",
-      steps: [
-        { stepNumber: 1, instruction: "Find a safe space immediately.", icon: "shield" },
-        { stepNumber: 2, instruction: "Call women's helpline 181.", icon: "phone" },
-        { stepNumber: 3, instruction: "Gather important documents.", icon: "file" }
-      ],
-      emergencyActions: ["Call 100", "Leave the premises if unsafe"],
-      relatedLaws: ["Protection of Women from Domestic Violence Act 2005"],
+      language: language || 'en',
+      summary: translatePlaceholder("I understand. Here are steps to stay safe.", language),
+      steps: localizedSteps,
+      emergencyActions: [translatePlaceholder("Call 100", language), translatePlaceholder("Leave the premises if unsafe", language)],
+      relatedLaws: [translatePlaceholder("Protection of Women from Domestic Violence Act 2005", language)],
       helplineNumbers: ["181", "100"],
       audioUrl: null // Stub for Bhashini TTS output
     });

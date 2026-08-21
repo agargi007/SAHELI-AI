@@ -65,7 +65,8 @@ export default function VoiceInterface({ language, onTranscript }) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) { setSupported(false); return; }
         const rec = new SpeechRecognition();
-        rec.continuous = false;
+        // keep listening until user explicitly clicks to stop
+        rec.continuous = true;
         rec.interimResults = true;
         rec.lang = LANG_CODES[language] || 'hi-IN';
         rec.onresult = (e) => {
@@ -74,13 +75,29 @@ export default function VoiceInterface({ language, onTranscript }) {
             if (final) { setText(prev => (prev + ' ' + final).trim()); setInterim(''); }
             else setInterim(inter);
         };
-        rec.onend = () => setIsListening(false);
+        // ensure UI updates when recognition engine stops
+        rec.onend = () => {
+            setIsListening(false);
+        };
         recognitionRef.current = rec;
     }, [language]);
 
     const toggleListening = () => {
-        if (isListening) { recognitionRef.current?.stop(); setIsListening(false); }
-        else { recognitionRef.current?.start(); setIsListening(true); setInterim(''); }
+        if (isListening) {
+            // append any live interim to final text before stopping
+            setText(prev => (prev + (interim ? ' ' + interim : '')).trim());
+            setInterim('');
+            recognitionRef.current?.stop();
+            setIsListening(false);
+        } else {
+            if (recognitionRef.current) {
+                recognitionRef.current.lang = LANG_CODES[language] || 'hi-IN';
+                recognitionRef.current.continuous = true;
+                try { recognitionRef.current.start(); } catch (e) { /* ignore already-started errors */ }
+            }
+            setIsListening(true);
+            setInterim('');
+        }
     };
 
     const handleSend = () => {
@@ -153,7 +170,8 @@ export default function VoiceInterface({ language, onTranscript }) {
             {/* Text Input */}
             <div className="space-y-3">
                 <textarea
-                    value={text}
+                    // show live interim appended to current text while listening
+                    value={isListening ? (text + (interim ? ' ' + interim : '')) : text}
                     onChange={(e) => setText(e.target.value)}
                     placeholder={ui.placeholder}
                     rows={3}
